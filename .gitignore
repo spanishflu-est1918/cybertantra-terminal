@@ -9,3 +9,12 @@ cybertantra-server
 # IDE
 .idea/
 .vscode/
+# Binaries
+cybertantra
+cybertantra-web
+
+# Skill files
+*.skill
+
+# Test screenshots
+e2e/*.png
