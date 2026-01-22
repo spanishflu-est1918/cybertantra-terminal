@@ -108,11 +108,16 @@ Entry saved: 2026-01-22T07:20:00Z
 
 The oracle queries a corpus of lecture transcriptions using semantic search.
 
+**Corpus location:** `~/www/cybertantra-legacy/transcriptions/@corpus/`
+Contains markdown transcriptions of Skyler's lectures on Tantra, consciousness, Vedic philosophy, etc.
+
 **Requirements:**
-- Load embeddings from existing corpus (see `~/www/cybertantra-legacy/transcriptions/`)
-- Use OpenAI embeddings API for query embedding
-- Return top 3 relevant chunks with source citations
-- Format response in contemplative style
+- Load/embed the corpus markdown files
+- Use OpenAI embeddings API (`text-embedding-3-small`)
+- Chunk documents (~500 tokens per chunk with overlap)
+- Store embeddings in SQLite with pgvector-style similarity search, or use a simple in-memory approach
+- Query: embed user question, find top 3 similar chunks
+- Return formatted response with source citations
 
 **Environment:**
 - `OPENAI_API_KEY` - For embeddings
