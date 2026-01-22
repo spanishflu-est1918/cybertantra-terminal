@@ -1,0 +1,11 @@
+# Binaries
+cybertantra
+cybertantra-server
+*.exe
+
+# SSH keys
+.ssh/
+
+# IDE
+.idea/
+.vscode/
