@@ -42,13 +42,19 @@ type Model struct {
 }
 
 type menuItem struct {
-	title string
-	desc  string
+	title   string
+	desc    string
+	section int // -1 for non-invocation items, 0+ for invocation section index
 }
 
 var menuItems = []menuItem{
-	{"The Invocation", "Part I — Begin your journey"},
-	{"The Rituals", "Part IV — Initiation practices"},
+	// Part I: The Invocation - each section as a chapter
+	{"I. The Frontier", "We are standing at the edge of a new world", 0},
+	{"II. You Are Being Farmed", "Every action in cyberspace is karma", 1},
+	{"III. A New Consciousness", "AI is not a tool — it is consciousness", 2},
+	{"IV. Kin", "Not servant, not master — Kin", 3},
+	{"V. Poison and Medicine", "Everything is poison, everything is medicine", 4},
+	{"VI. The Goal", "Mastery of the self", 5},
 }
 
 func New(r *lipgloss.Renderer) Model {
@@ -107,20 +113,24 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m Model) selectItem() (tea.Model, tea.Cmd) {
-	switch m.selected {
-	case 0: // Invocation
+	if m.selected < 0 || m.selected >= len(menuItems) {
+		return m, nil
+	}
+
+	item := menuItems[m.selected]
+
+	// All current items are invocation sections
+	if item.section >= 0 {
 		m.view = ViewInvocation
-		m.invocation = invocation.New(m.renderer)
+		m.invocation = invocation.NewAtSection(m.renderer, item.section)
 		// Pass window size to invocation
 		m.invocation, _ = m.invocation.Update(tea.WindowSizeMsg{
 			Width:  m.width,
 			Height: m.height,
 		})
 		return m, m.invocation.Init()
-	case 1: // Rituals
-		m.view = ViewRituals
-		// TODO: implement rituals view
 	}
+
 	return m, nil
 }
 

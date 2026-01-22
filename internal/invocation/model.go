@@ -341,7 +341,23 @@ func New(r *lipgloss.Renderer) Model {
 	}
 }
 
+// NewAtSection creates an invocation model starting at a specific section
+func NewAtSection(r *lipgloss.Renderer, sectionIndex int) Model {
+	if sectionIndex < 0 || sectionIndex >= len(sections) {
+		sectionIndex = 0
+	}
+	return Model{
+		styles:       NewStyles(r),
+		phase:        phaseTitleReveal,
+		sectionIndex: sectionIndex,
+	}
+}
+
 func (m Model) Init() tea.Cmd {
+	// If starting at a specific section (not opening), begin typewriter
+	if m.phase == phaseTitleReveal {
+		return typeTick()
+	}
 	return nil
 }
 
