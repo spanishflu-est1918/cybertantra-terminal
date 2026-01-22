@@ -308,6 +308,7 @@ type Model struct {
 	width         int
 	height        int
 	ready         bool
+	scrollOffset  int // Scroll position for long content
 }
 
 // Messages
@@ -351,9 +352,28 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "ctrl+c", "q":
 			return m, tea.Quit
 		case " ":
+			m.scrollOffset = 0 // Reset scroll on advance
 			return m.advance()
 		case "enter":
+			m.scrollOffset = 0 // Reset scroll on back
 			return m.goBack()
+		case "up", "k":
+			if m.scrollOffset > 0 {
+				m.scrollOffset--
+			}
+			return m, nil
+		case "down", "j":
+			m.scrollOffset++
+			return m, nil
+		case "pgup":
+			m.scrollOffset -= 10
+			if m.scrollOffset < 0 {
+				m.scrollOffset = 0
+			}
+			return m, nil
+		case "pgdown":
+			m.scrollOffset += 10
+			return m, nil
 		}
 
 	case tea.WindowSizeMsg:
@@ -692,8 +712,6 @@ func (m Model) View() string {
 			}
 		}
 
-		// No prompts in terminal - shown in HTML footer
-
 	case phaseClosing:
 		b.WriteString(titleStyle.Render("॥ ॐ ॥"))
 		b.WriteString("\n\n\n")
@@ -719,7 +737,6 @@ func (m Model) View() string {
 			lines = append(lines, blankLine)
 			continue
 		}
-		// Calculate visible length (strip ANSI codes for measurement)
 		lineLen := lipgloss.Width(line)
 		leftPad := (w - lineLen) / 2
 		if leftPad < 0 {
@@ -733,40 +750,99 @@ func (m Model) View() string {
 		lines = append(lines, centeredLine)
 	}
 
-	// Calculate vertical padding
 	contentHeight := len(lines)
-	topPad := (m.height - contentHeight) / 2
-	if topPad < 0 {
-		topPad = 0
+	viewportHeight := m.height - 2 // Reserve space for scroll indicator
+
+	// If content fits, center it vertically (no scrolling needed)
+	if contentHeight <= viewportHeight {
+		topPad := (viewportHeight - contentHeight) / 2
+		if topPad < 0 {
+			topPad = 0
+		}
+
+		var result strings.Builder
+		lineNum := 0
+
+		// Top padding
+		for i := 0; i < topPad && lineNum < m.height; i++ {
+			result.WriteString(blankLine)
+			result.WriteString("\n")
+			lineNum++
+		}
+
+		// Content
+		for _, line := range lines {
+			if lineNum >= m.height {
+				break
+			}
+			result.WriteString(line)
+			result.WriteString("\n")
+			lineNum++
+		}
+
+		// Bottom padding
+		for lineNum < m.height {
+			result.WriteString(blankLine)
+			result.WriteString("\n")
+			lineNum++
+		}
+
+		return result.String()
 	}
 
-	// Build full screen output
+	// Content overflows - use scroll offset
+	maxScroll := contentHeight - viewportHeight
+	if maxScroll < 0 {
+		maxScroll = 0
+	}
+
+	// Clamp scroll offset
+	scrollOffset := m.scrollOffset
+	if scrollOffset > maxScroll {
+		scrollOffset = maxScroll
+	}
+	if scrollOffset < 0 {
+		scrollOffset = 0
+	}
+
 	var result strings.Builder
 	lineNum := 0
 
-	// Top padding
-	for i := 0; i < topPad && lineNum < m.height; i++ {
+	// Render visible portion of content
+	for i := scrollOffset; i < len(lines) && lineNum < viewportHeight; i++ {
+		result.WriteString(lines[i])
+		result.WriteString("\n")
+		lineNum++
+	}
+
+	// Pad to fill viewport if needed
+	for lineNum < viewportHeight {
 		result.WriteString(blankLine)
 		result.WriteString("\n")
 		lineNum++
 	}
 
-	// Content
-	for _, line := range lines {
-		if lineNum >= m.height {
-			break
-		}
-		result.WriteString(line)
-		result.WriteString("\n")
-		lineNum++
+	// Scroll indicator
+	var scrollInfo string
+	if scrollOffset == 0 {
+		scrollInfo = s.Dim.Render("↓ scroll down")
+	} else if scrollOffset >= maxScroll {
+		scrollInfo = s.Dim.Render("↑ scroll up")
+	} else {
+		scrollInfo = s.Dim.Render("↑↓ scroll")
 	}
 
-	// Bottom padding - CRITICAL for clearing old content
-	for lineNum < m.height {
-		result.WriteString(blankLine)
-		result.WriteString("\n")
-		lineNum++
+	indicatorLen := lipgloss.Width(scrollInfo)
+	indicatorPad := (w - indicatorLen) / 2
+	if indicatorPad < 0 {
+		indicatorPad = 0
 	}
+	result.WriteString(strings.Repeat(" ", indicatorPad))
+	result.WriteString(scrollInfo)
+	result.WriteString("\n")
+
+	// Fill remaining height
+	result.WriteString(blankLine)
 
 	return result.String()
 }
