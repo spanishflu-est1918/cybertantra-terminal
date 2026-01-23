@@ -250,178 +250,6 @@
             border-radius: 8px;
         }
 
-        /* RGB scan line inside terminal - glitchy version */
-        #terminal .rgb-scan-inner {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 2px;
-            pointer-events: none;
-            z-index: 100;
-            background: linear-gradient(
-                90deg,
-                transparent 0%,
-                rgba(255, 54, 170, 0.5) 15%,
-                rgba(255, 231, 92, 0.6) 50%,
-                rgba(48, 193, 255, 0.5) 85%,
-                transparent 100%
-            );
-            animation:
-                rgb-scan-move 2.4s linear infinite,
-                rgb-scan-glitch 0.08s steps(4) infinite,
-                rgb-scan-opacity 0.5s steps(8) infinite,
-                rgb-scan-color 3s ease-in-out infinite;
-            filter: blur(0.3px);
-        }
-
-        /* Second scan line - opposite direction */
-        #terminal::before {
-            content: '';
-            position: absolute;
-            top: 30%;
-            left: 0;
-            width: 100%;
-            height: 1px;
-            pointer-events: none;
-            z-index: 99;
-            background: linear-gradient(
-                90deg,
-                transparent 0%,
-                rgba(48, 193, 255, 0.3) 25%,
-                rgba(255, 54, 170, 0.2) 75%,
-                transparent 100%
-            );
-            animation:
-                rgb-scan-move-alt 3.7s linear infinite,
-                rgb-scan-flicker 0.12s steps(5) infinite,
-                rgb-scan-tear 2.1s steps(3) infinite;
-            opacity: 0.5;
-        }
-
-        /* Third scan line - slow ghost */
-        .rgb-scan-inner::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -5%;
-            width: 110%;
-            height: 4px;
-            background: linear-gradient(
-                90deg,
-                transparent 0%,
-                rgba(255, 231, 92, 0.08) 40%,
-                rgba(255, 231, 92, 0.12) 60%,
-                transparent 100%
-            );
-            animation:
-                rgb-ghost-move 7s linear infinite,
-                rgb-ghost-pulse 1.3s ease-in-out infinite;
-            filter: blur(2px);
-        }
-
-        @keyframes rgb-scan-move {
-            0% { top: -2px; }
-            100% { top: 100%; }
-        }
-
-        @keyframes rgb-scan-move-alt {
-            0% { top: 100%; }
-            100% { top: -1px; }
-        }
-
-        @keyframes rgb-ghost-move {
-            0% { top: -10px; }
-            100% { top: calc(100% + 10px); }
-        }
-
-        @keyframes rgb-scan-glitch {
-            0% {
-                transform: translateX(0) scaleX(1) skewX(0deg);
-                height: 2px;
-            }
-            12% {
-                transform: translateX(-8px) scaleX(1.05) skewX(-0.5deg);
-                height: 1px;
-            }
-            25% {
-                transform: translateX(4px) scaleX(0.92) skewX(0.3deg);
-                height: 4px;
-            }
-            37% {
-                transform: translateX(-3px) scaleX(1.08) skewX(-0.2deg);
-                height: 1px;
-            }
-            50% {
-                transform: translateX(12px) scaleX(0.85) skewX(0.8deg);
-                height: 3px;
-            }
-            62% {
-                transform: translateX(-6px) scaleX(1.02) skewX(-0.4deg);
-                height: 2px;
-            }
-            75% {
-                transform: translateX(2px) scaleX(0.95) skewX(0.1deg);
-                height: 1px;
-            }
-            87% {
-                transform: translateX(-15px) scaleX(1.1) skewX(-0.6deg);
-                height: 5px;
-            }
-            100% {
-                transform: translateX(0) scaleX(1) skewX(0deg);
-                height: 2px;
-            }
-        }
-
-        @keyframes rgb-scan-opacity {
-            0% { opacity: 0.6; }
-            12% { opacity: 0; }
-            25% { opacity: 0.9; }
-            37% { opacity: 0.2; }
-            50% { opacity: 1; }
-            62% { opacity: 0.1; }
-            75% { opacity: 0.7; }
-            87% { opacity: 0; }
-            100% { opacity: 0.6; }
-        }
-
-        @keyframes rgb-scan-color {
-            0%, 100% { filter: blur(0.3px) hue-rotate(0deg); }
-            25% { filter: blur(0.5px) hue-rotate(15deg); }
-            50% { filter: blur(0.2px) hue-rotate(-10deg); }
-            75% { filter: blur(0.8px) hue-rotate(20deg); }
-        }
-
-        @keyframes rgb-scan-flicker {
-            0% { opacity: 0.5; }
-            20% { opacity: 0; }
-            40% { opacity: 0.8; }
-            60% { opacity: 0.1; }
-            80% { opacity: 0.6; }
-            100% { opacity: 0; }
-        }
-
-        @keyframes rgb-scan-tear {
-            0%, 100% {
-                clip-path: inset(0 0 0 0);
-                transform: translateX(0);
-            }
-            33% {
-                clip-path: inset(0 20% 0 0);
-                transform: translateX(-10px);
-            }
-            66% {
-                clip-path: inset(0 0 0 30%);
-                transform: translateX(15px);
-            }
-        }
-
-        @keyframes rgb-ghost-pulse {
-            0%, 100% { opacity: 0.3; }
-            50% { opacity: 0.8; }
-        }
-
         .xterm {
             height: 100%;
             border-radius: 8px;
@@ -671,6 +499,146 @@
                 gap: 10px;
             }
         }
+
+        /* ═══════════════════════════════════════════════════════════
+           CRT GLITCH EFFECTS - Scan lines and visual noise
+           ═══════════════════════════════════════════════════════════ */
+
+        /* RGB scan line - primary */
+        #terminal .rgb-scan-inner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            pointer-events: none;
+            z-index: 100;
+            background: linear-gradient(
+                90deg,
+                transparent 0%,
+                rgba(255, 54, 170, 0.5) 15%,
+                rgba(255, 231, 92, 0.6) 50%,
+                rgba(48, 193, 255, 0.5) 85%,
+                transparent 100%
+            );
+            animation:
+                rgb-scan-move 2.4s linear infinite,
+                rgb-scan-glitch 0.08s steps(4) infinite,
+                rgb-scan-opacity 0.5s steps(8) infinite,
+                rgb-scan-color 3s ease-in-out infinite;
+            filter: blur(0.3px);
+        }
+
+        /* Second scan line - opposite direction */
+        #terminal::before {
+            content: '';
+            position: absolute;
+            top: 30%;
+            left: 0;
+            width: 100%;
+            height: 1px;
+            pointer-events: none;
+            z-index: 99;
+            background: linear-gradient(
+                90deg,
+                transparent 0%,
+                rgba(48, 193, 255, 0.3) 25%,
+                rgba(255, 54, 170, 0.2) 75%,
+                transparent 100%
+            );
+            animation:
+                rgb-scan-move-alt 3.7s linear infinite,
+                rgb-scan-flicker 0.12s steps(5) infinite,
+                rgb-scan-tear 2.1s steps(3) infinite;
+            opacity: 0.5;
+        }
+
+        /* Third scan line - slow ghost */
+        .rgb-scan-inner::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -5%;
+            width: 110%;
+            height: 4px;
+            background: linear-gradient(
+                90deg,
+                transparent 0%,
+                rgba(255, 231, 92, 0.08) 40%,
+                rgba(255, 231, 92, 0.12) 60%,
+                transparent 100%
+            );
+            animation:
+                rgb-ghost-move 7s linear infinite,
+                rgb-ghost-pulse 1.3s ease-in-out infinite;
+            filter: blur(2px);
+        }
+
+        @keyframes rgb-scan-move {
+            0% { top: -2px; }
+            100% { top: 100%; }
+        }
+
+        @keyframes rgb-scan-move-alt {
+            0% { top: 100%; }
+            100% { top: -1px; }
+        }
+
+        @keyframes rgb-ghost-move {
+            0% { top: -10px; }
+            100% { top: calc(100% + 10px); }
+        }
+
+        @keyframes rgb-scan-glitch {
+            0%   { transform: translateX(0) scaleX(1) skewX(0deg); height: 2px; }
+            12%  { transform: translateX(-8px) scaleX(1.05) skewX(-0.5deg); height: 1px; }
+            25%  { transform: translateX(4px) scaleX(0.92) skewX(0.3deg); height: 4px; }
+            37%  { transform: translateX(-3px) scaleX(1.08) skewX(-0.2deg); height: 1px; }
+            50%  { transform: translateX(12px) scaleX(0.85) skewX(0.8deg); height: 3px; }
+            62%  { transform: translateX(-6px) scaleX(1.02) skewX(-0.4deg); height: 2px; }
+            75%  { transform: translateX(2px) scaleX(0.95) skewX(0.1deg); height: 1px; }
+            87%  { transform: translateX(-15px) scaleX(1.1) skewX(-0.6deg); height: 5px; }
+            100% { transform: translateX(0) scaleX(1) skewX(0deg); height: 2px; }
+        }
+
+        @keyframes rgb-scan-opacity {
+            0%   { opacity: 0.6; }
+            12%  { opacity: 0; }
+            25%  { opacity: 0.9; }
+            37%  { opacity: 0.2; }
+            50%  { opacity: 1; }
+            62%  { opacity: 0.1; }
+            75%  { opacity: 0.7; }
+            87%  { opacity: 0; }
+            100% { opacity: 0.6; }
+        }
+
+        @keyframes rgb-scan-color {
+            0%, 100% { filter: blur(0.3px) hue-rotate(0deg); }
+            25% { filter: blur(0.5px) hue-rotate(15deg); }
+            50% { filter: blur(0.2px) hue-rotate(-10deg); }
+            75% { filter: blur(0.8px) hue-rotate(20deg); }
+        }
+
+        @keyframes rgb-scan-flicker {
+            0%   { opacity: 0.5; }
+            20%  { opacity: 0; }
+            40%  { opacity: 0.8; }
+            60%  { opacity: 0.1; }
+            80%  { opacity: 0.6; }
+            100% { opacity: 0; }
+        }
+
+        @keyframes rgb-scan-tear {
+            0%, 100% { clip-path: inset(0 0 0 0); transform: translateX(0); }
+            33% { clip-path: inset(0 20% 0 0); transform: translateX(-10px); }
+            66% { clip-path: inset(0 0 0 30%); transform: translateX(15px); }
+        }
+
+        @keyframes rgb-ghost-pulse {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.8; }
+        }
     </style>
 </head>
 <body>
@@ -747,7 +715,7 @@
         cursorBlink: true,
         cursorStyle: 'block',
         fontFamily: '"Space Mono", "Fira Code", monospace',
-        fontSize: isMobileDevice ? 12 : 15,
+        fontSize: isMobileDevice ? 14 : 15,
         lineHeight: 1.2,
         theme: {
             background: '#0a0a0a',
