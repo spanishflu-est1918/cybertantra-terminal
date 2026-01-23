@@ -90,12 +90,18 @@ export function Reader({ chapter, currentLine, totalChapters, width, height }: R
       {/* Footer / help bar */}
       <Box width={width} justifyContent="space-between" paddingLeft={1} paddingRight={1}>
         <Text>
-          <Text color={colors.primary}>j/k</Text>
-          <Text color={colors.muted}>: scroll  </Text>
-          <Text color={colors.primary}>n/p</Text>
+          <Text color={colors.primary}>space</Text>
+          <Text color={colors.muted}>/</Text>
+          <Text color={colors.primary}>↓</Text>
+          <Text color={colors.muted}>  </Text>
+          <Text color={colors.primary}>enter</Text>
+          <Text color={colors.muted}>/</Text>
+          <Text color={colors.primary}>↑</Text>
+          <Text color={colors.muted}>  </Text>
+          <Text color={colors.primary}>←→</Text>
           <Text color={colors.muted}>: chapter  </Text>
           <Text color={colors.primary}>c</Text>
-          <Text color={colors.muted}>: chapters  </Text>
+          <Text color={colors.muted}>: list  </Text>
           <Text color={colors.primary}>q</Text>
           <Text color={colors.muted}>: quit</Text>
         </Text>

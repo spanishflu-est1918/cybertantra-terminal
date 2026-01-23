@@ -17,7 +17,7 @@ export interface Progress {
   timestamp: string;
 }
 
-export type AppScreen = 'splash' | 'resume' | 'reader' | 'chapters' | 'exit';
+export type AppScreen = 'splash' | 'resume' | 'chapter-intro' | 'reader' | 'chapters' | 'exit';
 
 export interface AppState {
   screen: AppScreen;

@@ -38,11 +38,14 @@ export function ResumePrompt({ width, height, progress, chapters }: ResumePrompt
       <Box height={2} />
 
       <Box flexDirection="column" alignItems="center">
-        <Text color={colors.accent}>
-          [r] Resume reading
+        <Text>
+          <Text color={colors.primary}>[r]</Text>
+          <Text color={colors.focal[0]}> Resume reading</Text>
         </Text>
-        <Text color={colors.dim}>
-          [n] Start fresh
+        <Box height={1} />
+        <Text>
+          <Text color={colors.primary}>[n]</Text>
+          <Text color={colors.muted}> Start fresh</Text>
         </Text>
       </Box>
     </Box>

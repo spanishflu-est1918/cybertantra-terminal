@@ -8,6 +8,7 @@ import { ResumePrompt } from './components/ResumePrompt.js';
 import { Reader } from './components/Reader.js';
 import { ChapterModal } from './components/ChapterModal.js';
 import { ExitScreen } from './components/ExitScreen.js';
+import { ChapterIntro } from './components/ChapterIntro.js';
 
 export function App(): React.ReactElement {
   const { exit } = useApp();
@@ -70,52 +71,98 @@ export function App(): React.ReactElement {
     }
   }, [screen, exit]);
 
+  // Handle chapter intro timing
+  useEffect(() => {
+    if (screen === 'chapter-intro') {
+      const timer = setTimeout(() => {
+        setScreen('reader');
+      }, 1800);
+      return () => clearTimeout(timer);
+    }
+  }, [screen]);
+
   // Navigation helpers
   const goToNextLine = useCallback(() => {
     const chapter = chapters[currentChapter];
     if (!chapter) return;
 
-    if (currentLine < chapter.lines.length - 1) {
-      setCurrentLine(currentLine + 1);
+    // Find next non-empty line
+    let nextLine = currentLine + 1;
+    while (nextLine < chapter.lines.length && chapter.lines[nextLine].type === 'empty') {
+      nextLine++;
+    }
+
+    if (nextLine < chapter.lines.length) {
+      setCurrentLine(nextLine);
     } else if (currentChapter < chapters.length - 1) {
-      // Move to next chapter
+      // Move to next chapter with intro
       setCurrentChapter(currentChapter + 1);
       setCurrentLine(0);
+      setScreen('chapter-intro');
     }
   }, [chapters, currentChapter, currentLine]);
 
   const goToPrevLine = useCallback(() => {
-    if (currentLine > 0) {
-      setCurrentLine(currentLine - 1);
+    const chapter = chapters[currentChapter];
+    if (!chapter) return;
+
+    // Find previous non-empty line
+    let prevLine = currentLine - 1;
+    while (prevLine >= 0 && chapter.lines[prevLine].type === 'empty') {
+      prevLine--;
+    }
+
+    if (prevLine >= 0) {
+      setCurrentLine(prevLine);
     } else if (currentChapter > 0) {
-      // Move to previous chapter, last line
+      // Move to previous chapter with intro
       const prevChapter = chapters[currentChapter - 1];
       setCurrentChapter(currentChapter - 1);
-      setCurrentLine(prevChapter ? prevChapter.lines.length - 1 : 0);
+      // Find last non-empty line
+      let lastLine = prevChapter ? prevChapter.lines.length - 1 : 0;
+      while (lastLine > 0 && prevChapter?.lines[lastLine].type === 'empty') {
+        lastLine--;
+      }
+      setCurrentLine(lastLine);
+      setScreen('chapter-intro');
     }
   }, [chapters, currentChapter, currentLine]);
 
+  // Helper to find first non-empty line in a chapter
+  const findFirstContentLine = useCallback((chapter: Chapter) => {
+    for (let i = 0; i < chapter.lines.length; i++) {
+      if (chapter.lines[i].type !== 'empty') return i;
+    }
+    return 0;
+  }, []);
+
   const goToNextChapter = useCallback(() => {
     if (currentChapter < chapters.length - 1) {
+      const nextChapter = chapters[currentChapter + 1];
       setCurrentChapter(currentChapter + 1);
-      setCurrentLine(0);
+      setCurrentLine(nextChapter ? findFirstContentLine(nextChapter) : 0);
+      setScreen('chapter-intro');
     }
-  }, [chapters.length, currentChapter]);
+  }, [chapters, currentChapter, findFirstContentLine]);
 
   const goToPrevChapter = useCallback(() => {
     if (currentChapter > 0) {
+      const prevChapter = chapters[currentChapter - 1];
       setCurrentChapter(currentChapter - 1);
-      setCurrentLine(0);
+      setCurrentLine(prevChapter ? findFirstContentLine(prevChapter) : 0);
+      setScreen('chapter-intro');
     }
-  }, [currentChapter]);
+  }, [chapters, currentChapter, findFirstContentLine]);
 
   const goToChapter = useCallback((index: number) => {
     if (index >= 0 && index < chapters.length) {
+      const chapter = chapters[index];
       setCurrentChapter(index);
-      setCurrentLine(0);
+      setCurrentLine(chapter ? findFirstContentLine(chapter) : 0);
       setShowChapterModal(false);
+      setScreen('chapter-intro');
     }
-  }, [chapters.length]);
+  }, [chapters, findFirstContentLine]);
 
   // Input handling
   useInput((input, key) => {
@@ -124,8 +171,14 @@ export function App(): React.ReactElement {
       if (savedProgress) {
         setScreen('resume');
       } else {
-        setScreen('reader');
+        setScreen('chapter-intro');
       }
+      return;
+    }
+
+    // Chapter intro - skip on any key
+    if (screen === 'chapter-intro') {
+      setScreen('reader');
       return;
     }
 
@@ -137,15 +190,15 @@ export function App(): React.ReactElement {
           setCurrentChapter(savedProgress.chapterIndex);
           setCurrentLine(savedProgress.lineIndex);
         }
-        setScreen('reader');
+        setScreen('reader'); // Resume goes directly to reader
         return;
       }
       if (input === 'n' || input === 'N') {
-        // Start fresh
+        // Start fresh - show chapter intro
         clearProgress();
         setCurrentChapter(0);
         setCurrentLine(0);
-        setScreen('reader');
+        setScreen('chapter-intro');
         return;
       }
       return;
@@ -186,30 +239,35 @@ export function App(): React.ReactElement {
         return;
       }
 
-      // Navigation
-      if (input === 'j' || key.downArrow) {
+      // Navigation - arrows, space, enter
+      if (key.downArrow) {
         goToNextLine();
         return;
       }
 
-      if (input === 'k' || key.upArrow) {
+      if (key.upArrow) {
         goToPrevLine();
         return;
       }
 
-      if (input === 'n' || key.rightArrow) {
+      if (key.rightArrow) {
         goToNextChapter();
         return;
       }
 
-      if (input === 'p' || key.leftArrow) {
+      if (key.leftArrow) {
         goToPrevChapter();
         return;
       }
 
-      // Space also advances
+      // Space forward, Enter backward
       if (input === ' ') {
         goToNextLine();
+        return;
+      }
+
+      if (key.return) {
+        goToPrevLine();
         return;
       }
     }
@@ -243,6 +301,22 @@ export function App(): React.ReactElement {
         <ExitScreen width={termWidth} height={termHeight} />
       </Box>
     );
+  }
+
+  if (screen === 'chapter-intro') {
+    const chapter = chapters[currentChapter];
+    if (chapter) {
+      return (
+        <Box width={termWidth} height={termHeight}>
+          <ChapterIntro
+            chapter={chapter}
+            totalChapters={chapters.length}
+            width={termWidth}
+            height={termHeight}
+          />
+        </Box>
+      );
+    }
   }
 
   // Reader with optional modal overlay

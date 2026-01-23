@@ -27,6 +27,11 @@ export function parseMarkdown(content: string, maxWidth: number = 70): Line[] {
     }
   }
 
+  // Remove trailing empty lines
+  while (result.length > 0 && result[result.length - 1].type === 'empty') {
+    result.pop();
+  }
+
   return result;
 }
 
