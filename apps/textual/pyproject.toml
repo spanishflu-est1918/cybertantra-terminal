@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cybertantra-reader"
+version = "0.1.0"
+description = "A meditative reading experience for the terminal"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "textual>=0.47.0",
+    "rich>=13.7.0",
+]
+
+[project.scripts]
+cybertantra = "main:main"

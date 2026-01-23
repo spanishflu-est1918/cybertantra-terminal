@@ -1,0 +1,209 @@
+# Cybertantra Reader - Parallel Build
+# Build Ink (React/Node) and Textual (Python) readers simultaneously
+
+# Design specification shared by both builders
+const design_spec = """
+## Cybertantra Zen Reader - Design Specification
+
+### Core Experience: Focal Line Reading
+A meditative reading experience where:
+- The current line is bright and centered (the focal point)
+- Lines above/below fade progressively (like a wheel)
+- Navigation feels like scrolling through a scroll or wheel
+
+### Visual Design
+
+```
+                    (very dim)  ...first explorers. The first humans...
+                       (dim)  Cyberspace is in its infancy. We are the
+                     (faded)
+    ──────────────────────────────────────────────────────────────────────
+    →   We are standing at the edge of a new world.                      ←
+    ──────────────────────────────────────────────────────────────────────
+                     (faded)
+                       (dim)  The window is closing. A black hole is forming
+                    (very dim)  ...at the center of this transformation...
+```
+
+### Opacity Levels (from center outward)
+- Level 0 (focal line): 100% brightness - #ffffff or #f0f0f0
+- Level 1 (±1 line): 70% - #b0b0b0
+- Level 2 (±2 lines): 45% - #808080
+- Level 3 (±3 lines): 25% - #505050
+- Level 4+ (beyond): 10% - #303030
+
+### Color Palette (CRT Neon)
+- Primary (titles/emphasis): #ffef7c (yellow)
+- Accent: #5ad4ff (cyan)
+- Secondary: #ff66cc (magenta)
+- Text: gradient from #ffffff to #303030
+- Background: terminal default (black/dark)
+
+### Features
+
+1. **Splash Screen**
+   - "॥ CYBERTANTRA ॥"
+   - "the terminal is the temple"
+   - Press any key to begin
+   - Fade transition to chapter 1
+
+2. **Chapter Navigation**
+   - Load from ../../content/chapters/*.md (5 chapters)
+   - j/k or ↑/↓: move focal line up/down
+   - n or →: next chapter
+   - p or ←: previous chapter
+   - c: open chapter list modal
+   - q: quit with closing message
+
+3. **Chapter List Modal**
+   - Shows all 5 chapters with numbers
+   - Current chapter highlighted
+   - Press 1-5 to jump
+   - Esc to close
+
+4. **Progress Indicator**
+   - Subtle "Chapter 2/5" in top-right corner
+   - Current chapter title in top-left
+
+5. **Progress Persistence**
+   - Save to ~/.cybertantra/progress.json
+   - Remember: current chapter, line position
+   - On launch: offer to resume or start fresh
+
+6. **Markdown Rendering**
+   - Parse markdown from chapter files
+   - # headers: yellow, bold
+   - **bold**: yellow highlight
+   - *italic*: cyan
+   - Regular text: white/gray based on focal distance
+   - Wrap long lines to ~70 chars
+
+7. **Exit Screen**
+   - "॥ ॐ ॥"
+   - "You are a god in training."
+   - Pause, then exit
+
+### Technical Requirements
+
+**Content Location:**
+- Chapter files: ../../content/chapters/*.md (relative to app directory)
+- Files: 01-the-frontier.md through 05-the-goal.md
+
+**Keyboard Handling:**
+- Raw mode for immediate response
+- No enter required
+- Handle terminal resize
+
+**File Structure (for both apps):**
+```
+apps/{ink|textual}/
+├── package.json / requirements.txt
+├── src/ or main file
+├── README.md (how to run)
+└── ...
+```
+"""
+
+# Agent definitions
+agent ink_builder:
+  model: opus
+  prompt: """
+You are building a terminal reading app using Ink (React for CLI).
+
+Tech stack:
+- Ink (React for terminals): https://github.com/vadimdemedes/ink
+- TypeScript
+- ink-markdown or custom markdown parsing
+
+Key Ink concepts:
+- Use React hooks (useState, useEffect)
+- Use useInput for keyboard handling
+- Use Box for layout (flexbox)
+- Use Text for styled text
+- Use useApp() for app control
+
+Create a complete, working app in apps/ink/ that implements the design spec.
+The app should be runnable with `npm install && npm start`.
+
+Write all necessary files. Make it beautiful and functional.
+"""
+
+agent textual_builder:
+  model: opus
+  prompt: """
+You are building a terminal reading app using Textual (Python TUI framework).
+
+Tech stack:
+- Textual: https://textual.textualize.io/
+- Python 3.11+
+- Built-in Markdown widget or custom rendering
+
+Key Textual concepts:
+- App class with compose() method
+- CSS-like styling with .tcss files
+- Widget classes for components
+- on_key for keyboard handling
+- reactive properties for state
+
+Create a complete, working app in apps/textual/ that implements the design spec.
+The app should be runnable with `pip install -r requirements.txt && python main.py`.
+
+Write all necessary files. Make it beautiful and functional.
+"""
+
+# Parallel execution - both builders work simultaneously
+parallel:
+  ink_result = session: ink_builder
+    prompt: """
+Build the Cybertantra Zen Reader using Ink (React for CLI).
+
+Follow the design specification exactly. Create all files in apps/ink/.
+Make sure to:
+1. Initialize with `npx create-ink-app --typescript` structure
+2. Implement the focal line reading with opacity gradients
+3. Handle all keyboard navigation
+4. Implement chapter modal
+5. Save/restore progress
+6. Parse markdown from chapter files
+7. Create splash and exit screens
+
+The chapter files are at: ../../content/chapters/
+(01-the-frontier.md, 02-you-are-being-farmed.md, etc.)
+
+Test that it compiles and runs.
+"""
+    context: design_spec
+
+  textual_result = session: textual_builder
+    prompt: """
+Build the Cybertantra Zen Reader using Textual (Python).
+
+Follow the design specification exactly. Create all files in apps/textual/.
+Make sure to:
+1. Set up proper Python project structure
+2. Implement the focal line reading with opacity gradients
+3. Handle all keyboard navigation
+4. Implement chapter modal
+5. Save/restore progress
+6. Parse markdown from chapter files
+7. Create splash and exit screens
+
+The chapter files are at: ../../content/chapters/
+(01-the-frontier.md, 02-you-are-being-farmed.md, etc.)
+
+Test that it runs.
+"""
+    context: design_spec
+
+# Summary session after both complete
+session "Summarize results"
+  prompt: """
+Both reader apps have been built. Summarize:
+1. What was created for each (Ink and Textual)
+2. How to run each one
+3. Any issues or notes
+4. Which feels better for the zen reading experience
+
+Keep it concise.
+"""
+  context: [ink_result, textual_result]

@@ -1,0 +1,181 @@
+/* Cybertantra Zen Reader Styles */
+/* CRT Neon aesthetic - sacred + cyber */
+
+Screen {
+    background: $background;
+}
+
+/* ===== Splash Screen ===== */
+SplashScreen {
+    align: center middle;
+}
+
+#splash-container {
+    width: auto;
+    height: auto;
+    padding: 3 6;
+}
+
+#splash-title {
+    text-align: center;
+    color: #ffef7c;
+    text-style: bold;
+    margin-bottom: 2;
+}
+
+#splash-subtitle {
+    text-align: center;
+    color: #808080;
+    text-style: italic;
+    margin-bottom: 3;
+}
+
+#splash-prompt {
+    text-align: center;
+    color: #505050;
+}
+
+/* ===== Resume Screen ===== */
+ResumeScreen {
+    align: center middle;
+}
+
+#resume-container {
+    width: 50;
+    height: auto;
+    border: solid #505050;
+    padding: 1 2;
+    background: $surface;
+}
+
+#resume-title {
+    text-align: center;
+    color: #ffef7c;
+    text-style: bold;
+    margin-bottom: 1;
+}
+
+#resume-info {
+    text-align: center;
+    color: #b0b0b0;
+    margin-bottom: 1;
+}
+
+#resume-options {
+    text-align: center;
+    color: #808080;
+}
+
+/* ===== Chapter Modal ===== */
+ChapterModal {
+    align: center middle;
+}
+
+#modal-container {
+    width: 60;
+    height: auto;
+    border: solid #505050;
+    padding: 1 2;
+    background: $surface;
+}
+
+#modal-title {
+    text-align: center;
+    color: #ffef7c;
+    text-style: bold;
+    margin-bottom: 1;
+}
+
+.chapter-item {
+    padding: 0 1;
+    color: #808080;
+}
+
+.chapter-item.current {
+    color: #ffef7c;
+    text-style: bold;
+}
+
+#modal-footer {
+    text-align: center;
+    color: #505050;
+    margin-top: 1;
+}
+
+/* ===== Exit Screen ===== */
+ExitScreen {
+    align: center middle;
+}
+
+#exit-container {
+    width: auto;
+    height: auto;
+    padding: 3 6;
+}
+
+#exit-symbol {
+    text-align: center;
+    color: #ffef7c;
+    text-style: bold;
+    margin-bottom: 2;
+}
+
+#exit-message {
+    text-align: center;
+    color: #5ad4ff;
+    text-style: italic;
+}
+
+/* ===== Reader Screen ===== */
+ReaderScreen {
+    layout: vertical;
+}
+
+#header {
+    dock: top;
+    height: 1;
+    padding: 0 2;
+    background: $surface;
+}
+
+#chapter-title {
+    dock: left;
+    color: #ffef7c;
+}
+
+#progress {
+    dock: right;
+    color: #505050;
+}
+
+#reader-container {
+    width: 100%;
+    height: 100%;
+    align: center middle;
+}
+
+FocalReader {
+    width: 100%;
+    height: 100%;
+    padding: 0 4;
+    text-align: center;
+}
+
+.reader-line {
+    width: 100%;
+    text-align: center;
+    height: 1;
+}
+
+.focal-marker {
+    color: #505050;
+}
+
+#footer-bar {
+    dock: bottom;
+    height: 1;
+    background: $surface;
+    color: #505050;
+    text-align: center;
+    padding: 0 2;
+}
