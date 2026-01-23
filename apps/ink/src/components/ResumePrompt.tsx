@@ -58,8 +58,12 @@ export function ResumePrompt({ width, height, progress, chapters, selectedOption
         </Text>
       </Box>
 
-      <Box height={2} />
-      <Text color={colors.dim}>↑↓ select • space confirm</Text>
+      {process.env.CYBERTANTRA_WEB !== '1' && (
+        <>
+          <Box height={2} />
+          <Text color={colors.dim}>↑↓ select • space confirm</Text>
+        </>
+      )}
     </Box>
   );
 }

@@ -14,10 +14,11 @@ interface ReaderProps {
 
 export function Reader({ chapter, currentLine, totalChapters, width, height }: ReaderProps): React.ReactElement {
   const lines = chapter.lines;
+  const isWebMode = process.env.CYBERTANTRA_WEB === '1';
 
   // Calculate visible lines based on terminal height
-  // Reserve 4 lines: 1 top header, 1 bottom help, 2 padding
-  const visibleLines = height - 4;
+  // Reserve lines: 1 top header, 1 bottom help (if not web), 2 padding
+  const visibleLines = height - (isWebMode ? 3 : 4);
   const halfVisible = Math.floor(visibleLines / 2);
 
   // Calculate which lines to show (centered around current line)
@@ -87,28 +88,30 @@ export function Reader({ chapter, currentLine, totalChapters, width, height }: R
         })}
       </Box>
 
-      {/* Footer / help bar */}
-      <Box width={width} justifyContent="space-between" paddingLeft={1} paddingRight={1}>
-        <Text>
-          <Text color={colors.primary}>space</Text>
-          <Text color={colors.muted}>/</Text>
-          <Text color={colors.primary}>↓</Text>
-          <Text color={colors.muted}>  </Text>
-          <Text color={colors.primary}>enter</Text>
-          <Text color={colors.muted}>/</Text>
-          <Text color={colors.primary}>↑</Text>
-          <Text color={colors.muted}>  </Text>
-          <Text color={colors.primary}>←→</Text>
-          <Text color={colors.muted}>: chapter  </Text>
-          <Text color={colors.primary}>c</Text>
-          <Text color={colors.muted}>: list  </Text>
-          <Text color={colors.primary}>q</Text>
-          <Text color={colors.muted}>: quit</Text>
-        </Text>
-        <Text color={colors.muted}>
-          {progress}%
-        </Text>
-      </Box>
+      {/* Footer / help bar - hidden in web mode (HTML has its own controls) */}
+      {!isWebMode && (
+        <Box width={width} justifyContent="space-between" paddingLeft={1} paddingRight={1}>
+          <Text>
+            <Text color={colors.primary}>space</Text>
+            <Text color={colors.muted}>/</Text>
+            <Text color={colors.primary}>↓</Text>
+            <Text color={colors.muted}>  </Text>
+            <Text color={colors.primary}>enter</Text>
+            <Text color={colors.muted}>/</Text>
+            <Text color={colors.primary}>↑</Text>
+            <Text color={colors.muted}>  </Text>
+            <Text color={colors.primary}>←→</Text>
+            <Text color={colors.muted}>: chapter  </Text>
+            <Text color={colors.primary}>c</Text>
+            <Text color={colors.muted}>: list  </Text>
+            <Text color={colors.primary}>q</Text>
+            <Text color={colors.muted}>: quit</Text>
+          </Text>
+          <Text color={colors.muted}>
+            {progress}%
+          </Text>
+        </Box>
+      )}
     </Box>
   );
 }
