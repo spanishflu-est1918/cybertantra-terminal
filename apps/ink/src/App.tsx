@@ -25,6 +25,7 @@ export function App(): React.ReactElement {
   const [currentLine, setCurrentLine] = useState(0);
   const [showChapterModal, setShowChapterModal] = useState(false);
   const [savedProgress, setSavedProgress] = useState<Progress | null>(null);
+  const [resumeOption, setResumeOption] = useState(0); // 0 = resume, 1 = start fresh
 
   // Load chapters on mount
   useEffect(() => {
@@ -184,17 +185,39 @@ export function App(): React.ReactElement {
 
     // Resume prompt
     if (screen === 'resume') {
+      // Arrow navigation
+      if (key.upArrow || key.downArrow) {
+        setResumeOption(prev => prev === 0 ? 1 : 0);
+        return;
+      }
+      // Space or Enter to confirm
+      if (input === ' ' || key.return) {
+        if (resumeOption === 0) {
+          // Resume from saved progress
+          if (savedProgress) {
+            setCurrentChapter(savedProgress.chapterIndex);
+            setCurrentLine(savedProgress.lineIndex);
+          }
+          setScreen('reader');
+        } else {
+          // Start fresh
+          clearProgress();
+          setCurrentChapter(0);
+          setCurrentLine(0);
+          setScreen('chapter-intro');
+        }
+        return;
+      }
+      // Legacy key support
       if (input === 'r' || input === 'R') {
-        // Resume from saved progress
         if (savedProgress) {
           setCurrentChapter(savedProgress.chapterIndex);
           setCurrentLine(savedProgress.lineIndex);
         }
-        setScreen('reader'); // Resume goes directly to reader
+        setScreen('reader');
         return;
       }
       if (input === 'n' || input === 'N') {
-        // Start fresh - show chapter intro
         clearProgress();
         setCurrentChapter(0);
         setCurrentLine(0);
@@ -289,6 +312,7 @@ export function App(): React.ReactElement {
           width={termWidth}
           height={termHeight}
           progress={savedProgress}
+          selectedOption={resumeOption}
           chapters={chapters}
         />
       </Box>

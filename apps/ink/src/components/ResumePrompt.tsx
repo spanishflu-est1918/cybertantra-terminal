@@ -8,9 +8,10 @@ interface ResumePromptProps {
   height: number;
   progress: Progress;
   chapters: Chapter[];
+  selectedOption: number; // 0 = resume, 1 = start fresh
 }
 
-export function ResumePrompt({ width, height, progress, chapters }: ResumePromptProps): React.ReactElement {
+export function ResumePrompt({ width, height, progress, chapters, selectedOption }: ResumePromptProps): React.ReactElement {
   const centerPadding = Math.max(0, Math.floor((height - 12) / 2));
   const chapter = chapters[progress.chapterIndex];
   const chapterTitle = chapter ? chapter.title : `Chapter ${progress.chapterIndex + 1}`;
@@ -39,15 +40,26 @@ export function ResumePrompt({ width, height, progress, chapters }: ResumePrompt
 
       <Box flexDirection="column" alignItems="center">
         <Text>
-          <Text color={colors.primary}>[r]</Text>
-          <Text color={colors.focal[0]}> Resume reading</Text>
+          <Text color={selectedOption === 0 ? colors.primary : colors.dim}>
+            {selectedOption === 0 ? '▸ ' : '  '}
+          </Text>
+          <Text color={selectedOption === 0 ? colors.focal[0] : colors.muted}>
+            Resume reading
+          </Text>
         </Text>
         <Box height={1} />
         <Text>
-          <Text color={colors.primary}>[n]</Text>
-          <Text color={colors.muted}> Start fresh</Text>
+          <Text color={selectedOption === 1 ? colors.primary : colors.dim}>
+            {selectedOption === 1 ? '▸ ' : '  '}
+          </Text>
+          <Text color={selectedOption === 1 ? colors.focal[0] : colors.muted}>
+            Start fresh
+          </Text>
         </Text>
       </Box>
+
+      <Box height={2} />
+      <Text color={colors.dim}>↑↓ select • space confirm</Text>
     </Box>
   );
 }
