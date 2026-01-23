@@ -1,47 +1,58 @@
-# Cybertantra Terminal
+# Cybertantra
 
 The terminal is the temple.
 
-## Usage
+## Structure
 
-### Local CLI
+```
+cybertantra/
+├── document.md          # Full manifesto
+├── content/
+│   └── chapters/        # Individual chapter files
+├── apps/
+│   ├── go/              # Bubble Tea TUI (Go)
+│   ├── ink/             # Ink TUI (React/Node) — planned
+│   └── textual/         # Textual TUI (Python) — planned
+└── CLAUDE.md
+```
+
+## Content
+
+The manifesto is in `document.md`. Individual chapters for the reading app are in `content/chapters/`.
+
+## Apps
+
+### Go (Bubble Tea)
+
 ```bash
+cd apps/go
+go build -o cybertantra .
 ./cybertantra
 ```
 
-### SSH Server
+SSH server:
 ```bash
+go build -o cybertantra-server ./cmd/server
 ./cybertantra-server
-# Then connect:
 ssh -p 2222 localhost
 ```
 
-### Build
+### Ink (planned)
+
 ```bash
-go build -o cybertantra .
-go build -o cybertantra-server ./cmd/server
+cd apps/ink
+npm install
+npm start
 ```
 
-## Commands
+### Textual (planned)
 
-- `invoke <deity>` — invoke a deity
-- `practice` — begin daily practice
-- `oracle` — consult the oracle
-- `mantra` — receive a mantra
-- `help` — show commands
-- `quit` — exit
+```bash
+cd apps/textual
+pip install -r requirements.txt
+python main.py
+```
 
-## Architecture
+## Philosophy
 
-Built with [Charm](https://charm.sh):
-- **Bubble Tea** — TUI framework
-- **Lipgloss** — Styling
-- **Wish** — SSH server
-
-## Next
-
-- [ ] RAG integration (oracle queries over lecture corpus)
-- [ ] Practice tracker
-- [ ] Journaling
-- [ ] Web via xterm.js or ttyd
-- [ ] Deploy to `ssh cybertantra.io`
+Every screen is an altar. Every moment of attention is an offering.

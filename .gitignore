@@ -1,20 +1,27 @@
 # Binaries
-cybertantra
-cybertantra-server
+apps/go/cybertantra
+apps/go/cybertantra-server
+apps/go/cybertantra-web
 *.exe
 
-# SSH keys
-.ssh/
+# Go
+apps/go/.ssh/
+
+# Node
+apps/ink/node_modules/
+apps/ink/dist/
+
+# Python
+apps/textual/__pycache__/
+apps/textual/.venv/
+*.pyc
 
 # IDE
 .idea/
 .vscode/
-# Binaries
-cybertantra
-cybertantra-web
 
 # Skill files
 *.skill
 
-# Test screenshots
-e2e/*.png
+# Test artifacts
+apps/go/e2e/*.png
