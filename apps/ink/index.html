@@ -651,7 +651,7 @@
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     const basePath = window.location.pathname.replace(/\/$/, ''); // Remove trailing slash
     const wsUrl = `${protocol}//${window.location.host}${basePath}/ws`;
-    const ws = new WebSocket(wsUrl);
+    const ws = new WebSocket(wsUrl, ['tty']);  // ttyd requires 'tty' subprotocol
 
     ws.binaryType = 'arraybuffer';
 
@@ -659,10 +659,10 @@
         loadingEl.classList.add('hidden');
         term.focus();
 
-        // ttyd protocol: '1' + JSON for resize
+        // ttyd protocol: pure JSON for initial handshake (NOT prefixed!)
         const dims = fitAddon.proposeDimensions();
         if (dims) {
-            ws.send('1' + JSON.stringify({ columns: dims.cols, rows: dims.rows }));
+            ws.send(JSON.stringify({ columns: dims.cols, rows: dims.rows }));
         }
     };
 
@@ -702,7 +702,8 @@
         fitAddon.fit();
         const dims = fitAddon.proposeDimensions();
         if (dims && ws.readyState === WebSocket.OPEN) {
-            ws.send('1' + JSON.stringify({ columns: dims.cols, rows: dims.rows }));  // ttyd protocol
+            // ttyd resize: prefix '1' + JSON (after initial handshake)
+            ws.send('1' + JSON.stringify({ columns: dims.cols, rows: dims.rows }));
         }
     });
 
