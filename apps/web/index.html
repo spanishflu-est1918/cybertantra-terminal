@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cybertantra</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xterm/xterm@5.5.0/css/xterm.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #0a0a0a;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', monospace;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 900px;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #ffef7c;
+      text-align: center;
+      margin-bottom: 10px;
+      font-weight: normal;
+      letter-spacing: 4px;
+    }
+
+    .subtitle {
+      color: #666;
+      text-align: center;
+      margin-bottom: 30px;
+      font-style: italic;
+    }
+
+    #terminal-container {
+      background: #0d0d0d;
+      border-radius: 8px;
+      padding: 16px;
+      box-shadow:
+        0 0 60px rgba(255, 239, 124, 0.15),
+        0 0 100px rgba(255, 239, 124, 0.08),
+        0 0 150px rgba(90, 212, 255, 0.05);
+      animation: breathe 8s ease-in-out infinite;
+    }
+
+    @keyframes breathe {
+      0%, 100% {
+        box-shadow:
+          0 0 60px rgba(255, 239, 124, 0.15),
+          0 0 100px rgba(255, 239, 124, 0.08),
+          0 0 150px rgba(90, 212, 255, 0.05);
+      }
+      50% {
+        box-shadow:
+          0 0 80px rgba(255, 239, 124, 0.2),
+          0 0 120px rgba(255, 239, 124, 0.12),
+          0 0 180px rgba(90, 212, 255, 0.08);
+      }
+    }
+
+    #terminal {
+      width: 100%;
+      height: 500px;
+    }
+
+    .status {
+      color: #444;
+      text-align: center;
+      margin-top: 20px;
+      font-size: 12px;
+    }
+
+    .status.connected {
+      color: #5ad4ff;
+    }
+
+    .status.error {
+      color: #ff66cc;
+    }
+
+    .instructions {
+      color: #505050;
+      text-align: center;
+      margin-top: 30px;
+      font-size: 13px;
+      line-height: 1.8;
+    }
+
+    .instructions kbd {
+      background: #1a1a1a;
+      padding: 2px 8px;
+      border-radius: 4px;
+      color: #ffef7c;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>॥ CYBERTANTRA ॥</h1>
+    <p class="subtitle">welcome to the temple</p>
+
+    <div id="terminal-container">
+      <div id="terminal"></div>
+    </div>
+
+    <p class="status" id="status">Connecting...</p>
+
+    <div class="instructions">
+      <kbd>Space</kbd> / <kbd>↓</kbd> forward &nbsp;&nbsp;
+      <kbd>Enter</kbd> / <kbd>↑</kbd> backward &nbsp;&nbsp;
+      <kbd>←</kbd> <kbd>→</kbd> chapter &nbsp;&nbsp;
+      <kbd>c</kbd> chapters &nbsp;&nbsp;
+      <kbd>q</kbd> quit
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@xterm/xterm@5.5.0/lib/xterm.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@xterm/addon-fit@0.10.0/lib/addon-fit.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@xterm/addon-web-links@0.11.0/lib/addon-web-links.min.js"></script>
+  <script>
+    // Configuration - connect to ttyd WebSocket relative to current location
+    const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const TTYD_URL = `${wsProtocol}//${window.location.host}${window.location.pathname.replace(/\/$/, '')}/ws`;
+
+    // Terminal setup
+    const term = new Terminal({
+      cursorBlink: false,
+      cursorStyle: 'bar',
+      fontSize: 15,
+      fontFamily: "'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', monospace",
+      theme: {
+        background: '#0d0d0d',
+        foreground: '#cccccc',
+        cursor: '#ffef7c',
+        cursorAccent: '#0d0d0d',
+        selectionBackground: '#ffef7c33',
+        black: '#0d0d0d',
+        red: '#ff66cc',
+        green: '#5ad4ff',
+        yellow: '#ffef7c',
+        blue: '#5ad4ff',
+        magenta: '#ff66cc',
+        cyan: '#5ad4ff',
+        white: '#cccccc',
+        brightBlack: '#505050',
+        brightRed: '#ff66cc',
+        brightGreen: '#5ad4ff',
+        brightYellow: '#ffef7c',
+        brightBlue: '#5ad4ff',
+        brightMagenta: '#ff66cc',
+        brightCyan: '#5ad4ff',
+        brightWhite: '#ffffff',
+      },
+      allowTransparency: true,
+    });
+
+    const fitAddon = new FitAddon.FitAddon();
+    const webLinksAddon = new WebLinksAddon.WebLinksAddon();
+
+    term.loadAddon(fitAddon);
+    term.loadAddon(webLinksAddon);
+    term.open(document.getElementById('terminal'));
+    fitAddon.fit();
+
+    const statusEl = document.getElementById('status');
+
+    // WebSocket connection to ttyd
+    let ws;
+    let reconnectAttempts = 0;
+    const maxReconnectAttempts = 5;
+
+    function connect() {
+      statusEl.textContent = 'Connecting...';
+      statusEl.className = 'status';
+
+      ws = new WebSocket(TTYD_URL);
+      ws.binaryType = 'arraybuffer';
+
+      ws.onopen = () => {
+        statusEl.textContent = 'Connected';
+        statusEl.className = 'status connected';
+        reconnectAttempts = 0;
+
+        // Send terminal size
+        const size = JSON.stringify({
+          columns: term.cols,
+          rows: term.rows,
+        });
+        ws.send('1' + size);
+      };
+
+      ws.onmessage = (event) => {
+        const data = event.data;
+        if (typeof data === 'string') {
+          // ttyd protocol: first char is message type
+          const type = data[0];
+          const payload = data.slice(1);
+
+          if (type === '0') {
+            // Output
+            term.write(payload);
+          }
+        } else {
+          // Binary data
+          const bytes = new Uint8Array(data);
+          if (bytes[0] === 0) {
+            // Output
+            term.write(bytes.slice(1));
+          }
+        }
+      };
+
+      ws.onclose = () => {
+        statusEl.textContent = 'Disconnected';
+        statusEl.className = 'status error';
+
+        if (reconnectAttempts < maxReconnectAttempts) {
+          reconnectAttempts++;
+          setTimeout(connect, 2000);
+        } else {
+          statusEl.textContent = 'Connection failed. Refresh to retry.';
+        }
+      };
+
+      ws.onerror = () => {
+        statusEl.textContent = 'Connection error';
+        statusEl.className = 'status error';
+      };
+    }
+
+    // Send input to ttyd
+    term.onData((data) => {
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send('0' + data);
+      }
+    });
+
+    // Handle resize
+    window.addEventListener('resize', () => {
+      fitAddon.fit();
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        const size = JSON.stringify({
+          columns: term.cols,
+          rows: term.rows,
+        });
+        ws.send('1' + size);
+      }
+    });
+
+    // Start connection
+    connect();
+  </script>
+</body>
+</html>

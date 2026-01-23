@@ -21,7 +21,7 @@ export function SplashScreen({ width, height }: SplashScreenProps): React.ReactE
       <Box height={1} />
 
       <Text color={colors.muted} italic>
-        the terminal is the temple
+        welcome to the temple
       </Text>
 
       <Box height={3} />
