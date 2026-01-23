@@ -677,7 +677,8 @@
             }
         } else if (data instanceof ArrayBuffer) {
             const bytes = new Uint8Array(data);
-            if (bytes[0] === 0) {
+            // Command byte is ASCII: '0' = 48 for output
+            if (bytes[0] === 48) {
                 term.write(bytes.slice(1));
             }
         }
